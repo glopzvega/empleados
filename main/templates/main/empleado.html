@@ -1,0 +1,206 @@
+{% extends 'main/index.html' %}
+
+{% block styles %}
+<style>
+	.editable:hover{
+		cursor: pointer;
+	}
+	.hidden
+	{
+		display: none;
+	}
+	.editable:hover::after{
+		display: inline-block;
+	    font-style: normal;
+	    font-variant: normal;
+	    text-rendering: auto;
+	    font-size: 15px;
+	    -webkit-font-smoothing: antialiased;
+		font-family: "Font Awesome 5 Free"; font-weight: 900; content: "\f303";
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container" id="app">
+	<br>
+	<div class="row">		
+		<div class="col-10 offset-1">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Datos del Empleado</h5>
+					<hr>
+					<div class="card-text">
+						<div class="row">
+							<div class="col">
+								Cedula:								
+								<inline-editor :clave="'cedula'" :row="empleado"></inline-editor>
+								
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Nombre: 								
+								<inline-editor :clave="'nombre'" :row="empleado"></inline-editor>
+								
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Apellido Paterno: 								
+								<inline-editor :clave="'apellidop'" :row="empleado"></inline-editor>
+								
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Apellido Materno: 								
+								<inline-editor :clave="'apellidom'" :row="empleado"></inline-editor>
+								
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								CURP:
+								<inline-editor :clave="'curp'" :row="empleado"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Salario:
+								<inline-editor :clave="'salario'" :row="empleado"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Fecha Nac:
+								<inline-editor :clave="'fechanac'" :row="empleado"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Sexo:
+								<inline-editor :clave="'sexo'" :row="empleado"></inline-editor>
+							</div>
+						</div>
+					</div>					
+				</div>
+			</div>
+		</div>
+	</div>
+	<br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+	let token = "{{csrf_token}}";
+	Vue.component('inline-editor', {
+		data : function(){
+			return {
+				editor : {
+					'cedula' : false,
+					'nombre' : false,
+					'apellidop' : false,
+					'apellidom' : false,
+					'curp' : false,
+					'salario' : false,
+					'fechanac' : false,
+					'sexo' : false,
+				},
+			}
+		},
+		delimiters : ['[[', ']]'],
+		props : ['clave', 'row'],
+		mounted : function(){
+			// $('[data-toggle="tooltip"]').tooltip()
+		},		
+		computed : {
+			getData : function(){
+				return this.row[this.clave];
+			},			
+		},
+		methods : {
+			editar : function(){
+				let self = this;
+				this.editor[this.clave] = true;		
+				setTimeout(function(){
+					document.getElementById(self.clave).select();
+					$('[data-toggle="tooltip"]').tooltip()
+				}, 100)		
+			},
+			cancel : function(){
+				this.editor[this.clave] = false;
+				$('[data-toggle="tooltip"]').tooltip('hide')
+			},
+			save : function(e){	
+				let self = this;
+				let clave = this.clave;
+				let valor = this.row[this.clave];
+
+				if(valor == "")
+				{
+					alert("Debe introducir un valor.")					
+					document.getElementById(clave).focus();
+					console.log(e)
+					return false;
+				}		
+				params = {
+					method : 'POST',
+					credentials : "same-origin",
+					headers : {		
+						'Accept': 'application/json',			
+						'Content-Type': 'application/json',
+						'X-CSRFToken': token
+					},
+					body : JSON.stringify({ key : clave,  value : valor }),
+				}
+				fetch(this.$parent.host + `/update/${this.row.id}/`, params)
+					.then(function(res){
+						return res.json();
+					})
+					.then(function(res){
+						console.log(res)
+						self.editor[self.clave] = false;
+						$('[data-toggle="tooltip"]').tooltip('hide')
+					})
+			}
+		},
+		template : `
+			<div>
+				<div class="row" v-show="!editor[clave]">
+					<div class="col-12">
+						<h4 @click="editar" class="editable text-muted"> 
+						[[ getData ]] </h4>
+					</div>
+				</div>
+				<div class="row" v-if="editor[clave]">
+					<div class="col-10">
+						<input @keyup.enter="save" title="Presiona Enter para guardar" data-toggle="tooltip" :id="clave" type="text" class="form-control" v-model="row[clave]">
+					</div>
+					<div class="col-2">
+						<a @click.prevent="save" href="" class="btn btn-success" title="Guardar" data-toggle="tooltip">
+							<i class="fas fa-check"></i>
+						</a>
+						<a @click.prevent="cancel" href="" class="btn btn-secondary" title="Cancelar" data-toggle="tooltip">
+							<i class="fas fa-ban"></i>
+						</a>
+					</div>									
+				</div>
+				<br>
+			</div>
+		`
+	})
+	
+	let vm = new Vue({
+		el : "#app",
+		delimiters : ['[[', ']]'],
+		data : {		
+			empleado : JSON.parse('{{ json|safe }}'),
+			host : 'http://localhost',						
+		}
+	})
+</script>
+{% endblock %}
