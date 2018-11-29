@@ -61,8 +61,23 @@ def empleado(request, id):
 				"sexo" : empleado.sexo,
 				"fechanac" : str(empleado.fechanac),
 				"salario" : empleado.salario,
-				# "supervisor" : empleado.supervisor or '',
+				"supervisor" : ""
 			}
+	if empleado.supervisor:
+		sup = empleado.supervisor
+		jsone["supervisor"] = {
+					"id" : sup.id,
+					"full_name" : ("%s %s %s") % (sup.nombre, sup.apellidop, sup.apellidom),
+					"nombre" : sup.nombre,
+					"apellidop" : sup.apellidop,
+					"apellidom" : sup.apellidom,
+					"cedula" : sup.cedula,
+					"curp" : sup.curp,
+					"sexo" : sup.sexo,
+					"fechanac" : str(sup.fechanac),
+					"salario" : sup.salario,
+					"supervisor" : ""
+				} 
 	familiares = m.Familiar.objects.filter(empleado=empleado).order_by('nombre')
 	jsonf = []
 	for e in familiares:
@@ -118,6 +133,7 @@ def empleado(request, id):
 			"id" : p.id,
 			"nombre" : p.nombre,
 			})
+	empleados = get_empleados_list()
 	ctx = {
 		"e" : empleado,
 		"json" : json.dumps(jsone), 
@@ -126,6 +142,7 @@ def empleado(request, id):
 		"deptos_list" : json.dumps(lista), 
 		"proyectos" : json.dumps(jsont), 
 		"proyectos_list" : json.dumps(listap), 
+		"empleados_list" : json.dumps(empleados), 
 	}
 	return render(request, 'main/empleado.html', ctx)
 
@@ -157,7 +174,11 @@ def update_empleado(request, id):
 				familiar = m.Familiar.objects.create(**datajson["value"])				
 				# familiar.save()
 				return JsonResponse({"success" : True, "data" : datajson["value"]})
-			
+			elif datajson['key'] == 'supervisor' and value:				
+				sup = get_object_or_404(m.Empleado, pk=int(value))
+				empleado.supervisor= sup;
+				empleado.save()
+				return JsonResponse({"success" : True, "data" : datajson["value"]})			
 			else:
 				setattr(empleado, datajson["key"], value)			
 				empleado.save()			
@@ -177,10 +198,10 @@ def save_empleado(request):
 
 def delete_empleado(request, id):
 	empleado = get_object_or_404(m.Empleado, pk=id)
-	# empleado.delete();
+	empleado.delete();
 	return JsonResponse({"success" : True})
 
-def obtener_empleados(request):
+def get_empleados_list():
 	empleados = m.Empleado.objects.all().order_by('nombre')
 	data = []
 	if empleados:
@@ -193,18 +214,22 @@ def obtener_empleados(request):
 				}
 			data.append({
 				"id" : e.id,
+				"full_name" : ("%s %s %s") % (e.nombre, e.apellidop, e.apellidom),
 				"nombre" : e.nombre,
 				"apellidop" : e.apellidop,
 				"apellidom" : e.apellidom,
 				"cedula" : e.cedula,
 				"curp" : e.curp,
 				"sexo" : e.sexo,
-				"fechanac" : e.fechanac,
+				"fechanac" : str(e.fechanac),
 				"salario" : "%.2f" % e.salario or 0.00,
 				"supervisor" : supervisor			
 			})
-	return response(data)
+	return data
 
+def obtener_empleados(request):	
+	data = get_empleados_list()
+	return response(data)
 
 #### DEPARTAMENTOS ####
 
@@ -216,8 +241,11 @@ def departamentos(request):
 			"id" : d.id,
 			"nombre" : d.nombre
 			})
+	empleados = get_empleados_list()
+	print(empleados)
 	ctx = {
-		"data" : json.dumps(lista)
+		"data" : json.dumps(lista),
+		"empleados" : json.dumps(empleados)
 	}
 	return render(request, "main/departamentos.html", ctx)
 
@@ -308,17 +336,24 @@ def update_departamento(request, id):
 
 def delete_departamento(request, id):
 	depto = get_object_or_404(m.Departamento, pk=id)
-	# depto.delete();
+	depto.delete();
 	return JsonResponse({"success" : True})
 
 def save_departamento(request):
 	if request.method == 'POST':
 		datajson = json.loads(request.body.decode('utf-8'))
-		if "nombre" in datajson and datajson["nombre"]:
-			depto = m.Departamento.objects.create(**datajson)			
+		if "nombre" in datajson and datajson["nombre"] and "jefe" in datajson and datajson["jefe"]:
+			jefeid = int(datajson['jefe'])
+			empleado = get_object_or_404(m.Empleado, pk=jefeid)
+			depto = m.Departamento(nombre=datajson['nombre'])
+			# depto = m.Departamento.objects.create(**datajson)			
 			depto.save()
-			datajson["id"] = depto.id
-			return JsonResponse({"success" : True, "data" : datajson})
+			if depto.id:
+				datajson["id"] = depto.id
+				fecha = datetime.now().strftime("%Y-%m-%d")
+				newjefe = m.Jefe(departamento=depto, empleado=empleado, fechaads=fecha)
+				newjefe.save()
+				return JsonResponse({"success" : True, "data" : datajson})
 	return JsonResponse({"success" : False})
 
 #### MAQUINARIA ####
@@ -392,7 +427,7 @@ def update_maquina(request, id):
 
 def delete_maquina(request, id):
 	data = get_object_or_404(m.Maquinaria, pk=id)
-	# data.delete();
+	data.delete();
 	return JsonResponse({"success" : True})
 
 def save_maquina(request):
@@ -489,7 +524,7 @@ def update_proyecto(request, id):
 
 def delete_proyecto(request, id):
 	data = get_object_or_404(m.Proyecto, pk=id)
-	# data.delete();
+	data.delete();
 	return JsonResponse({"success" : True})
 
 def save_proyecto(request):

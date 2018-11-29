@@ -2,14 +2,22 @@ Vue.component('modal-depto', {
 	data : function(){
 		return {
 			depto : {
-				nombre : "",				
+				nombre : "",
+				jefe : ""			
 			}
 		}
 	},
-	props : ['departamentos'],
+	delimiters : ['[[', ']]'],
+	props : ['departamentos', 'empleados'],
 	methods : {
 		save : function(){
 			let self = this;
+
+			if(this.nombre == "" || this.jefe == ""){
+				alert("Los datos so requeridos");
+				return false
+			}
+
 			params = {
 				method : 'POST',
 				credentials : "same-origin",
@@ -51,6 +59,16 @@ Vue.component('modal-depto', {
 		        	<div class="col-12">
 		        		<label for="nombre">Nombre:</label>
 		        		<input type="text" id="nombre" v-model="depto.nombre" class="form-control">
+		        		<br />
+		        	</div>
+		        </div>
+		        <div class="row">
+		        	<div class="col-12">
+		        		<label for="jefe">Jefe de Departamento:</label>
+		        		<select id="jefe" v-model="depto.jefe" class="form-control">
+							<option value="">Seleccione un registro</option>
+							<option v-for="e in empleados" :value="e.id">[[ e.nombre ]] [[ e.apellidop ]] [[ e.apellidom ]]</option>
+		        		</select>
 		        		<br />
 		        	</div>
 		        </div>		        

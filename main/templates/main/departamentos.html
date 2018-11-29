@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container-fluid" id="app">
-		<modal-depto :departamentos="departamentos"></modal-depto>
+		<modal-depto :departamentos="departamentos" :empleados="empleados"></modal-depto>
 		<br>
 		<div class="card">
 			<div class="card-body">		
@@ -82,9 +82,9 @@
 		el : "#app",
 		delimiters : ['[[', ']]'],
 		data : {
-			all : false,
-			empleados : [],
-			departamentos : JSON.parse('{{ data|safe }}'),
+			all : false,			
+			departamentos : JSON.parse('{{ data|safe }}'),			
+			empleados : JSON.parse('{{ empleados|safe }}'),			
 			selected : [],
 			host : 'http://localhost/departamentos',
 		},

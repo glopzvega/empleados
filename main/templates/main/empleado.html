@@ -87,6 +87,13 @@
 								<inline-editor :input="'select'" :string="formatSexo" :options="sexos" :clave="'sexo'" :row="empleado"></inline-editor>
 							</div>
 						</div>
+						<div class="row">
+							<div class="col">
+								Supervisor:
+								<inline-editor :input="'select'" :clave="'supervisor'" :field="'nombre'" :row="empleado" :options="empleados_list" :text="'full_name'"></inline-editor>
+							</div>
+						</div>
+						
 					</div>					
 				</div>
 			</div>
@@ -333,6 +340,7 @@
 			deptos_list : JSON.parse('{{ deptos_list|safe }}'),
 			proyectos : JSON.parse('{{ proyectos|safe }}'),
 			proyectos_list : JSON.parse('{{ proyectos_list|safe }}'),
+			empleados_list : JSON.parse('{{ empleados_list|safe }}'),
 			host : 'http://localhost',
 			module : '/empleados',
 			selected : [],	

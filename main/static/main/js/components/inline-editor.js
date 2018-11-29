@@ -38,6 +38,12 @@ Vue.component('inline-editor', {
 			{
 				return this.string;
 			}
+			else if(this.text != '')
+			{		
+				console.log("####SSSDDDD")		
+				console.log(this.row[this.text])
+				return this.row[this.clave][this.text];
+			}
 			else if(this.field != '')
 			{				
 				console.log(this.row[this.clave][this.field])
@@ -72,8 +78,8 @@ Vue.component('inline-editor', {
 				if(value.id == id)
 				{
 					option = value.nombre;
-					// if(self.text != '')
-					// 	option = self.text;
+					if(self.text != '' && value[self.text] != undefined)
+						option = value[self.text];
 					return false;
 				}
 			})
@@ -166,10 +172,12 @@ Vue.component('inline-editor', {
 					<textarea :id="clave" v-if="getInput('textarea')" rows="5" class="form-control" v-model="row[clave]"></textarea>					
 					
 					<select :id="clave" v-model="row[clave]" v-if="getInput('select')" @keyup.enter="save" @keyup.esc="cancel" class="form-control">
+						<option value="">Selecciona un registro</option>
 						<option v-for="o in options" :value="o">[[ getOption(o.id) ]]</option>
 					</select>					
 					
 					<select :id="clave" v-model="row[clave]" v-if="getInput('select_list')" @keyup.enter="save" @keyup.esc="cancel" class="form-control">
+						<option value="">Selecciona un registro</option>
 						<option v-for="o in options" :value="o.id">[[ getOption(o.id) ]]</option>
 					</select>
 				</div>
