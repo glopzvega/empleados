@@ -1,5 +1,5 @@
 {% extends 'main/index.html' %}
-
+{% load static %}
 {% block styles %}
 <style>
 	.editable:hover{
@@ -23,10 +23,13 @@
 
 {% block content %}
 
-<div class="container" id="app">
+<div class="container-fluid" id="app">
+	<modal-depto :depto_id="getDepto" :departamentos="deptos_list" :empleado="empleado"></modal-depto>
+	<modal-proyecto :proyectos="proyectos_list" :trabajaen="proyectos" :empleado="empleado"></modal-proyecto>
+	<modal-familiar :empleado="empleado" :familiares="familiares"></modal-familiar>	
 	<br>
 	<div class="row">		
-		<div class="col-10 offset-1">
+		<div class="col-5 offset-1">
 			<div class="card">
 				<div class="card-body">
 					<h5 class="card-title">Datos del Empleado</h5>
@@ -69,22 +72,111 @@
 						<div class="row">
 							<div class="col">
 								Salario:
-								<inline-editor :clave="'salario'" :row="empleado"></inline-editor>
+								<inline-editor :clave="'salario'" :input="'number'" :row="empleado"></inline-editor>
 							</div>
 						</div>
 						<div class="row">
 							<div class="col">
 								Fecha Nac:
-								<inline-editor :clave="'fechanac'" :row="empleado"></inline-editor>
+								<inline-editor :input="'date'" :clave="'fechanac'" :row="empleado"></inline-editor>
 							</div>
 						</div>
 						<div class="row">
 							<div class="col">
 								Sexo:
-								<inline-editor :clave="'sexo'" :row="empleado"></inline-editor>
+								<inline-editor :input="'select'" :string="formatSexo" :options="sexos" :clave="'sexo'" :row="empleado"></inline-editor>
 							</div>
 						</div>
 					</div>					
+				</div>
+			</div>
+		</div>
+		<div class="col-5">
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Departamento</h5>
+						<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+							<button @click="asignarDepto" type="button" class="btn btn-primary btn-outline-success" title="Asigna un Departamento" data-toggle="tooltip"><i class="fas fa-plus"></i> Asignar </button>
+						</div>	
+					</div>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in departamentos" class="list-group-item">
+							<div class="row">								
+								<div class="col-12">
+									<a :href="getUrl('/departamentos/detalle/', item.departamento.id)">[[ item.departamento.nombre ]]</a>
+									<span class="float-right"><small class="text-muted">Adscrito en: </small><span>[[item.fechaads]]</span></span>
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Trabaja en</h5>
+						<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+  							<button @click="asignarProyecto" type="button" class="btn btn-primary btn-outline-success" title="Registra un nuevo empleado" data-toggle="tooltip"><i class="fas fa-plus"></i> Nuevo</button>
+  							
+  							<button type="button" @click.prevent="removeProyecto" class="btn btn-outline-danger btn-danger" :disabled="isDisabledProyecto" title="Elimina los registros seleccionados" data-toggle="tooltip">
+								<i class="fas fa-ban"></i> Eliminar</button>
+						</div>
+					</div>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in proyectos" @click="selectProyecto(item.id)" class="list-group-item">
+							<div class="row">	
+								<div class="col-1">
+									<input type="checkbox" :checked="isCheckedProyecto(item.id)">
+								</div>							
+								<div class="col-11">
+									<a :href="getUrl('/proyectos/detalle/', item.proyecto.id)">[[ item.proyecto.nombre ]]</a>
+									<span class="float-right">
+										<small class="text-muted">Horas: </small><span class="badge badge-primary">[[item.horas]]</span>
+									</span>
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Familiares</h5>	  
+					  	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+  							<button @click="asignarFamiliar" type="button" class="btn btn-primary btn-outline-success" title="Registra un nuevo empleado" data-toggle="tooltip"><i class="fas fa-plus"></i> Nuevo</button>
+  							
+  							<button type="button" @click.prevent="remove" class="btn btn-outline-danger btn-danger" :disabled="isDisabled" title="Elimina los registros seleccionados" data-toggle="tooltip">
+									<i class="fas fa-ban"></i> Eliminar</button>
+						</div>					  
+					</div>					
+					<hr>
+					<div class="card-text">						
+						 <ul class="list-group">
+						  <li v-for="item in familiares" @click="select(item.id)" class="list-group-item">
+							<div class="row">
+								<div class="col-1">
+									<input type="checkbox" :checked="isChecked(item.id)">	
+								</div>
+								<div class="col-11">
+									<span class="">[[ item.nombre ]] [[ item.apellidop ]] [[ item.apellidom ]]</span>	
+						  			<span v-html="badgeParentesco(item.parentesco)" class="float-right"></span>
+								</div>
+							</div>
+						  </li>						  
+						</ul>						
+					</div>
 				</div>
 			</div>
 		</div>
@@ -96,57 +188,64 @@
 
 {% block scripts %}
 <script>
-	let token = "{{csrf_token}}";
-	Vue.component('inline-editor', {
-		data : function(){
-			return {
-				editor : {
-					'cedula' : false,
-					'nombre' : false,
-					'apellidop' : false,
-					'apellidom' : false,
-					'curp' : false,
-					'salario' : false,
-					'fechanac' : false,
-					'sexo' : false,
-				},
-			}
-		},
+	let token = "{{csrf_token}}";	
+</script>
+<script src="{% static 'main/js/components/inline-editor.js' %}"></script>
+<script src="{% static 'main/js/empleados/modal-depto.js' %}"></script>
+<script src="{% static 'main/js/empleados/modal-proyecto.js' %}"></script>
+<script src="{% static 'main/js/empleados/modal-familiar.js' %}"></script>
+<script>
+	let vm = new Vue({
+		el : "#app",		
 		delimiters : ['[[', ']]'],
-		props : ['clave', 'row'],
-		mounted : function(){
-			// $('[data-toggle="tooltip"]').tooltip()
-		},		
 		computed : {
-			getData : function(){
-				return this.row[this.clave];
-			},			
+			formatSexo : function(){
+				if (this.empleado.sexo == 'h')
+					return 'Hombre';
+				return 'Mujer';
+			},	
+			getDepto : function()
+			{
+				if(this.departamentos.length > 0)
+					return this.departamentos[0].departamento;				
+				return "";
+			},
+			isDisabled : function()
+			{
+				return this.selected.length == 0;
+			},
+			isDisabledProyecto : function()
+			{
+				return this.selectedProy.length == 0;
+			},		
 		},
-		methods : {
-			editar : function(){
-				let self = this;
-				this.editor[this.clave] = true;		
-				setTimeout(function(){
-					document.getElementById(self.clave).select();
-					$('[data-toggle="tooltip"]').tooltip()
-				}, 100)		
+		methods : {	
+			getUrl : function(path, id){
+				let url = this.host + path;
+				if (id != undefined)
+					url += id;
+				return url;
 			},
-			cancel : function(){
-				this.editor[this.clave] = false;
-				$('[data-toggle="tooltip"]').tooltip('hide')
+			isChecked : function(id){			
+				return this.selected.indexOf(id) >= 0;
 			},
-			save : function(e){	
-				let self = this;
-				let clave = this.clave;
-				let valor = this.row[this.clave];
+			isCheckedProyecto : function(id){			
+				return this.selectedProy.indexOf(id) >= 0;
+			},
+			showModal : function(){
 
-				if(valor == "")
-				{
-					alert("Debe introducir un valor.")					
-					document.getElementById(clave).focus();
-					console.log(e)
-					return false;
-				}		
+			},
+			asignarDepto : function(){
+				$("#modal-depto").modal("show");
+			},
+			asignarProyecto : function(){
+				$("#modal-proyecto").modal("show");
+			},
+			asignarFamiliar : function(){
+				$("#modal-familiar").modal("show");				
+			},
+			remove : function(){
+				let self = this;
 				params = {
 					method : 'POST',
 					credentials : "same-origin",
@@ -155,51 +254,99 @@
 						'Content-Type': 'application/json',
 						'X-CSRFToken': token
 					},
-					body : JSON.stringify({ key : clave,  value : valor }),
+					body : JSON.stringify({ 'familiar_ids' : this.selected }),
 				}
-				fetch(this.$parent.host + `/update/${this.row.id}/`, params)
+				fetch(self.getUrl(`/familiares/delete/${self.empleado.id}/`), params)
 					.then(function(res){
-						return res.json();
+						return res.json()
 					})
 					.then(function(res){
 						console.log(res)
-						self.editor[self.clave] = false;
-						$('[data-toggle="tooltip"]').tooltip('hide')
+						if(res.success)
+						{
+							alert("Se han eliminado correctamente.");
+							location.reload();
+						}
+					});
+			},
+			removeProyecto : function(){
+				let self = this;
+				params = {
+					method : 'POST',
+					credentials : "same-origin",
+					headers : {		
+						'Accept': 'application/json',			
+						'Content-Type': 'application/json',
+						'X-CSRFToken': token
+					},
+					body : JSON.stringify({ 'proyecto_ids' : this.selectedProy }),
+				}
+				fetch(self.getUrl(`/trabajaen/delete/${self.empleado.id}/`), params)
+					.then(function(res){
+						return res.json()
 					})
-			}
+					.then(function(res){
+						console.log(res)
+						if(res.success)
+						{
+							alert("Se han eliminado correctamente.");
+							location.reload();
+						}
+					});				
+			},							
+			select : function(id){
+				let index = this.selected.indexOf(id);
+				if(index < 0)
+				{
+					this.selected.push(id);
+				}
+				else
+				{
+					this.selected.splice(index, 1);	
+				}
+			},
+			selectProyecto : function(id){
+				let index = this.selectedProy.indexOf(id);
+				if(index < 0)
+				{
+					this.selectedProy.push(id);
+				}
+				else
+				{
+					this.selectedProy.splice(index, 1);	
+				}
+			},
+			badgeParentesco : function(parentesco){
+				let string = parentesco[0].toUpperCase() + parentesco.slice(1);
+				return '<span class="badge badge-success">' + string + '</span>';
+			},
+			badgeSexo : function(sexo){
+				if(sexo == 'h')
+					return '<span class="badge badge-pill badge-primary">Hombre</span>';
+				return '<span class="badge badge-pill badge-danger">Mujer</span>';
+			},
 		},
-		template : `
-			<div>
-				<div class="row" v-show="!editor[clave]">
-					<div class="col-12">
-						<h4 @click="editar" class="editable text-muted"> 
-						[[ getData ]] </h4>
-					</div>
-				</div>
-				<div class="row" v-if="editor[clave]">
-					<div class="col-10">
-						<input @keyup.enter="save" title="Presiona Enter para guardar" data-toggle="tooltip" :id="clave" type="text" class="form-control" v-model="row[clave]">
-					</div>
-					<div class="col-2">
-						<a @click.prevent="save" href="" class="btn btn-success" title="Guardar" data-toggle="tooltip">
-							<i class="fas fa-check"></i>
-						</a>
-						<a @click.prevent="cancel" href="" class="btn btn-secondary" title="Cancelar" data-toggle="tooltip">
-							<i class="fas fa-ban"></i>
-						</a>
-					</div>									
-				</div>
-				<br>
-			</div>
-		`
-	})
-	
-	let vm = new Vue({
-		el : "#app",
-		delimiters : ['[[', ']]'],
 		data : {		
 			empleado : JSON.parse('{{ json|safe }}'),
-			host : 'http://localhost',						
+			familiares : JSON.parse('{{ familiares|safe }}'),
+			departamentos : JSON.parse('{{ departamentos|safe }}'),
+			deptos_list : JSON.parse('{{ deptos_list|safe }}'),
+			proyectos : JSON.parse('{{ proyectos|safe }}'),
+			proyectos_list : JSON.parse('{{ proyectos_list|safe }}'),
+			host : 'http://localhost',
+			module : '/empleados',
+			selected : [],	
+			selectedProy : [],	
+			sexos : [
+				{
+					id : 'h',
+					nombre : 'Hombre'
+				},
+				{
+					id : 'm',
+					nombre : 'Mujer'
+				},
+			]				
 		}
 	})
 </script>

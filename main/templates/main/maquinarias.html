@@ -3,15 +3,15 @@
 {% block content %}
 
 <div class="container-fluid" id="app">
-		<modal-empleado :empleados="empleados"></modal-empleado>
+		<modal-maquina :maquinas="maquinarias"></modal-maquina>
 		<br>
 		<div class="card">
 			<div class="card-body">		
 				<div class="row">
 					<div class="col-12">
 						<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
-						  <h3>Empleados <span class="badge badge-danger">
-						  [[ empleados.length ]] registros</span></h3>
+						  <h3>Maquinas <span class="badge badge-danger">
+						  [[ maquinarias.length ]] registros</span></h3>
 						  <!-- <div class="input-group">
 						    <div class="input-group-prepend">
 						      <div class="input-group-text" id="btnGroupAddon2">@</div>
@@ -19,7 +19,7 @@
 						    <input type="text" class="form-control" placeholder="Input group example" aria-label="Input group example" aria-describedby="btnGroupAddon2">
 						  </div> -->
 						  <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-  								<button @click="showModal" type="button" class="btn btn-primary btn-outline-success" title="Registra un nuevo empleado" data-toggle="tooltip">
+  								<button @click="showModal" type="button" class="btn btn-primary btn-outline-success" title="Registra una nueva maquina" data-toggle="tooltip">
   									<i class="fas fa-plus"></i> Nuevo</button>
   								<button type="button" @click.prevent="remove" class="btn btn-outline-danger btn-danger" :disabled="isDisabled" title="Elimina los registros seleccionados" data-toggle="tooltip">
   									<i class="fas fa-ban"></i> Eliminar</button>
@@ -48,29 +48,20 @@
 										<th>
 											<input type="checkbox" @click="selectAll" :checked="all">
 										</th>
-										<th>Cedula</th>
 										<th>Nombre</th>
-										<th>Curp</th>
-										<th>Sexo</th>
-										<th>Fecha Nac</th>
-										<th>Salario</th>
-										<th>Supervisor</th>
+										<th>Estatus</th>
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for="e in empleados" @click="select(e.id)">
+									<tr v-for="e in maquinarias" @click="select(e.id)">
 										<td>
 											<input type="checkbox" :checked="isChecked(e.id)">		
 										</td>
 										<td>
-											<a :href="getUrl(e.id)">[[ e.cedula ]]</a></td>
-										<td>
-											<a :href="getUrl(e.id)">[[ getNombre(e) ]]</a></td>
-										<td>[[ e.curp ]]</td>
-										<td>[[ getSexo(e.sexo) ]]</td>
-										<td>[[ e.fechanac ]]</td>
-										<td>[[ e.salario ]]</td>
-										<td>[[ e.supervisor.nombre ]]</td>
+											<a :href="getUrl(e.id)">
+												[[ e.nombre ]]</a>
+										</td>
+										<td v-html="getEstatus(e.estatus)"></td>
 									</tr>
 								</tbody>
 							</table>
@@ -86,37 +77,21 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'main/js/empleados/modal-empleado.js' %}"></script>
+<script src="{% static 'main/js/maquinas/modal-maquina.js' %}"></script>
 <script>
 	let token = "{{csrf_token}}";
 	let vm = new Vue({
 		el : "#app",
 		delimiters : ['[[', ']]'],
 		data : {
-			all : false,
-			empleados : [],
+			all : false,			
+			maquinarias : JSON.parse('{{ data|safe }}'),
 			selected : [],
-			host : 'http://localhost',
+			host : 'http://localhost/maquinarias',
 		},
 		mounted : function(){
 			let self = this;
-
 			$('[data-toggle="tooltip"]').tooltip();
-
-			fetch(this.host + '/empleados/get/')
-				.then(function(res){
-					return res.json()
-				})
-				.then(function(res){
-					console.log(res);
-					if(res.success)
-					{
-						self.empleados = res.data;
-						// self.empleados.forEach(function(value, index){
-						// 	self.selected.push(value.id);
-						// })
-					}
-				})
 		},
 		computed : {
 			isDisabled : function()
@@ -125,22 +100,21 @@
 			},
 		},
 		methods : {
+			getEstatus : function(estatus){
+				let e = '<span class="badge badge-pill badge-danger">Ocupado</span>';
+				if(estatus=="1")
+					e = '<span class="badge badge-pill badge-success">Disponible</span>';
+				return e;
+				// return (estatus=="1") ? "Disponible" : "Ocupado"; 
+			},
 			isChecked : function(id){
-				// return true;
-				// debugger
 				return this.selected.indexOf(id) >= 0;
-			},
-			getNombre : function(e){
-				return e.nombre + " " + e.apellidop + " " + e.apellidom;
-			},
-			getSexo : function(s){
-				return (s == 'h') ? 'Hombre' : 'Mujer';
-			},
+			},			
 			getUrl : function(id){
 				return `${this.host}/detalle/${id}/`;
 			},
 			showModal : function(){
-				$("#modal-empleado").modal("show");
+				$("#modal-maquina").modal("show");
 			},
 			selectAll : function(){
 				let self = this;
@@ -149,7 +123,7 @@
 
 				if (this.all)
 				{
-					this.empleados.forEach(function(value){
+					this.maquinarias.forEach(function(value){
 						self.selected.push(value.id)
 					})
 				}
@@ -177,10 +151,10 @@
 							console.log(res);	
 							if(res.success)
 							{
-								self.empleados.forEach(function(empleado, idx){
-									if(empleado.id == id)
+								self.maquinarias.forEach(function(maquina, idx){
+									if(maquina.id == id)
 									{										
-										self.empleados.splice(idx, 1);
+										self.maquinarias.splice(idx, 1);
 										return false;
 									}
 								})

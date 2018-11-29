@@ -11,6 +11,7 @@ class Empleado(models.Model):
 	sexo = models.CharField(max_length=1, choices=[('m', 'Mujer'), ('h', 'Hombre')])
 	fechanac = models.DateField()
 	salario = models.FloatField()
+	issupervisor = models.BooleanField(default=False)
 	supervisor = models.ForeignKey('Empleado', on_delete=models.SET_NULL, null=True, blank=True)
 
 	def __str__(self):
@@ -50,7 +51,7 @@ class Departamento(models.Model):
 
 class Proyecto(models.Model):
 	nombre = models.CharField(max_length=255)
-	descripcion = models.CharField(max_length=255)
+	descripcion = models.CharField(max_length=255, null=True, blank=True)
 	departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
 
 	def __str__(self):
@@ -73,7 +74,7 @@ class TrabajaEn(models.Model):
 	horas = models.IntegerField()
 
 	def __str__(self):
-		return self.empleado
+		return self.empleado.nombre
 
 class Jefe(models.Model):
 	empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
@@ -81,7 +82,7 @@ class Jefe(models.Model):
 	fechaads = models.DateField()
 
 	def __str__(self):
-		return self.empleado
+		return self.empleado.nombre
 
 class Asignado(models.Model):
 	empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
@@ -89,7 +90,7 @@ class Asignado(models.Model):
 	fechaads = models.DateField()
 
 	def __str__(self):
-		return self.empleado
+		return self.empleado.nombre
 
 class mAsignada(models.Model):
 	ESTADOS = [
@@ -98,12 +99,12 @@ class mAsignada(models.Model):
 	]
 	proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
 	maquinaria = models.ForeignKey(Maquinaria, on_delete=models.CASCADE)
-	fechaa = models.DateField()
-	fechae = models.DateField()
-	estatus = models.CharField(max_length=255, choices=ESTADOS)
+	fechaa = models.DateField(auto_now_add=True)
+	fechae = models.DateField(null=True, blank=True)
+	estatus = models.CharField(max_length=255, choices=ESTADOS, default='1')
 
 	def __str__(self):
-		return self.proyecto
+		return self.proyecto.nombre
 
 class Estado(models.Model):
 	nombre = models.CharField(max_length=255)

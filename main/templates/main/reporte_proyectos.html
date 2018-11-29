@@ -1,0 +1,57 @@
+{% extends 'main/index.html' %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Reporte General de Proyectos
+							<span class="badge badge-danger">{{ qty }} registros</span></h5>
+						<a href="javascript:window.print()" class="btn btn-primary pull-right d-print-none">
+							<i class="fas fa-print"></i>
+							Imprimir
+						</a>
+					</div>
+					<hr>
+					<div class="card-text">		
+						<table class="table">
+							<thead>
+								<tr>									
+									<th>Nombre</th>
+									<th>Departamento</th>
+									<th>Empleados</th>
+									<th>Maquinas</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for e in data %}
+								<tr>									
+									<td>{{ e.nombre }} </td>
+									<td>{{ e.departamento.nombre }}</td>
+									<td>
+										{% for d in e.empleados %}
+										<span class="badge badge-success">
+										{{d.empleado.nombre}} {{d.empleado.apellidop}} {{d.empleado.apellidom}}</span><br>
+										{% endfor %}
+									</td>
+									<td>
+										{% for m in e.maquinas %}
+										<span class="badge badge-warning">{{ m.maquinaria.descripcion }} 
+										({{ m.fechaa }})</span>
+										{% endfor %}		
+									</td>
+									<td>										
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+</div>
+{% endblock %}

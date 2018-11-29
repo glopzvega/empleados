@@ -1,0 +1,159 @@
+{% extends 'main/index.html' %}
+{% load static %}
+{% block styles %}
+<style>
+	.editable:hover{
+		cursor: pointer;
+	}
+	.hidden
+	{
+		display: none;
+	}
+	.editable:hover::after{
+		display: inline-block;
+	    font-style: normal;
+	    font-variant: normal;
+	    text-rendering: auto;
+	    font-size: 15px;
+	    -webkit-font-smoothing: antialiased;
+		font-family: "Font Awesome 5 Free"; font-weight: 900; content: "\f303";
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid" id="app">
+	<br>
+	<div class="row">		
+		<div class="col-5 offset-1">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Datos del Departamento</h5>
+					<hr>
+					<div class="card-text">
+						<div class="row">
+							<div class="col">
+								Nombre:								
+								<inline-editor :clave="'nombre'" :row="departamento"></inline-editor>
+								
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Jefe:								
+								<inline-editor :input="'select'" :clave="'jefe'" :field="'nombre'" :row="departamento" :options="jefes"></inline-editor>
+							</div>
+						</div>
+					</div>					
+				</div>
+			</div>
+		</div>
+		<div class="col-5">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Empleados</h5>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in empleados" class="list-group-item">
+							<div class="row">
+								<div class="col-12">
+									<a :href="getUrl('/detalle/', item.id)">
+									[[ item.nombre ]]</a>
+									<!-- <span class="float-right">
+										<small class="text-muted">Horas: </small><span class="badge badge-primary">[[item.horas]]</span>
+									</span> -->
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Proyectos</h5>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in proyectos" class="list-group-item">
+							<div class="row">								
+								<div class="col-12">
+									<a :href="getUrl('/proyectos/detalle/', item.id)">[[ item.nombre ]]</a>
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+	<br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+	let token = "{{csrf_token}}";	
+</script>
+<script src="{% static 'main/js/components/inline-editor.js' %}"></script>
+<script>		
+	
+	let vm = new Vue({
+		el : "#app",
+		delimiters : ['[[', ']]'],
+		data : {		
+			departamento : JSON.parse('{{ json|safe }}'),
+			jefes : JSON.parse('{{ jefes|safe }}'),
+			proyectos : JSON.parse('{{ proyectos|safe }}'),
+			empleados : JSON.parse('{{ empleados|safe }}'),
+			host : 'http://localhost',
+			module : '/departamentos',
+			selected : [],						
+		},
+		computed : {
+			getJefe : function(){
+				let jefe = this.departamento.jefe;
+				return jefe.nombre;
+			}
+		},
+		methods : {
+			isChecked : function(id){			
+				return this.selected.indexOf(id) >= 0;
+			},
+			showModal : function(){
+
+			},
+			remove : function(){
+
+			},
+			isDisabled : function()
+			{
+
+			},
+			getUrl : function(path, id){
+				let url = this.host + path;
+				if (id != undefined)
+					url += id;
+				return url;
+			},
+			select : function(id){
+				let index = this.selected.indexOf(id);
+				if(index < 0)
+				{
+					this.selected.push(id);
+				}
+				else
+				{
+					this.selected.splice(index, 1);	
+				}
+			},
+		}
+	})
+</script>
+{% endblock %}

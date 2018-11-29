@@ -1,0 +1,120 @@
+{% extends 'main/index.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+	.editable:hover{
+		cursor: pointer;
+	}
+	.hidden
+	{
+		display: none;
+	}
+	.editable:hover::after{
+		display: inline-block;
+	    font-style: normal;
+	    font-variant: normal;
+	    text-rendering: auto;
+	    font-size: 15px;
+	    -webkit-font-smoothing: antialiased;
+		font-family: "Font Awesome 5 Free"; font-weight: 900; content: "\f303";
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container" id="app">
+	<br>
+	<div class="row">		
+		<div class="col-5 offset-1">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Datos del Proyecto</h5>
+					<hr>
+					<div class="card-text">
+						<div class="row">
+							<div class="col">
+								Nombre:								
+								<inline-editor :clave="'nombre'" :row="proyecto"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Descripción:								
+								<inline-editor :tipo="'p'" :input="'textarea'" :clave="'descripcion'" :row="proyecto"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Departamento:								
+								<div class="row">
+									<div class="col-12">
+										<inline-editor :input="'select'" :clave="'departamento'" :field="'nombre'" :row="proyecto" :options="deptos.data"></inline-editor>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>					
+				</div>
+			</div>
+		</div>
+		<div class="col-5">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Empleados</h5>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in empleados" class="list-group-item">
+							<div class="row">								
+								<div class="col-12">
+									<a :href="getUrl('/detalle/', item.id)">[[ item.nombre ]]</a>
+									<span class="float-right">
+										<small class="text-muted">Horas: </small><span class="badge badge-primary">[[item.horas]]</span>
+									</span>
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+	let token = "{{csrf_token}}";	
+</script>
+<script src="{% static 'main/js/components/inline-editor.js' %}"></script>
+<script>
+	// let jsondata = JSON.parse(`{{ json|safe }}`);
+	let vm = new Vue({
+		el : "#app",
+		delimiters : ['[[', ']]'],
+		data : {		
+			proyecto : JSON.parse(`{{ json|safe }}`),
+			deptos : JSON.parse(`{{ deptos|safe }}`),
+			empleados : JSON.parse(`{{ empleados|safe }}`),
+			host : 'http://localhost',						
+			module : '/proyectos',						
+		},
+		methods : {
+			editarDepto : function(){
+
+			},
+			getUrl : function(path, id){
+				let url = this.host + path;
+				if (id != undefined)
+					url += id;
+				return url;
+			},
+		}
+	})
+</script>
+{% endblock %}

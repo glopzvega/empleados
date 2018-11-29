@@ -1,0 +1,143 @@
+{% extends 'main/index.html' %}
+{% load static %}
+{% block styles %}
+<style>
+	.editable:hover{
+		cursor: pointer;
+	}
+	.hidden
+	{
+		display: none;
+	}
+	.editable:hover::after{
+		display: inline-block;
+	    font-style: normal;
+	    font-variant: normal;
+	    text-rendering: auto;
+	    font-size: 15px;
+	    -webkit-font-smoothing: antialiased;
+		font-family: "Font Awesome 5 Free"; font-weight: 900; content: "\f303";
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid" id="app">
+	<modal-proyecto :proyectos="proyectos_list" :maquina="maquinaria" :masignada="proyectos"></modal-proyecto>
+	<br>
+	<div class="row">		
+		<div class="col-5 offset-1">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Datos de la Máquina</h5>
+					<hr>
+					<div class="card-text">
+						<div class="row">
+							<div class="col">
+								Nombre:								
+								<inline-editor :clave="'descripcion'" :row="maquinaria"></inline-editor>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								Estatus:								
+								<inline-editor :clave="'estatus'" :row="maquinaria" :input="'select_list'" :options="estatus" :string="formatEstatus"></inline-editor>
+								<!-- <h4 v-html="getEstatus(maquinaria.estatus)"></h4> -->
+								<br>
+							</div>
+						</div>
+					</div>					
+				</div>
+			</div>
+		</div>
+		<div class="col-5">
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Proyecto</h5>
+						<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+							<button @click="asignarProyecto" type="button" class="btn btn-primary btn-outline-success" title="Asigna un Proyecto" data-toggle="tooltip"><i class="fas fa-plus"></i> Asignar </button>
+						</div>
+					</div>
+					<hr>
+					<div class="card-text">
+						<ul class="list-group">
+						  <li v-for="item in proyectos" class="list-group-item">
+							<div class="row">								
+								<div class="col-12">
+									<a :href="getUrl('/proyectos/detalle/', item.id)">[[ item.nombre ]]</a>
+									<span class="float-right">
+										<small class="text-muted">Fecha: </small>
+										<span>[[item.fecha]]</span>
+									</span>
+								</div>
+							</div>
+						  </li>						  
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+	let token = "{{csrf_token}}";	
+</script>
+<script src="{% static 'main/js/components/inline-editor.js' %}"></script>
+<script src="{% static 'main/js/maquinas/modal-proyecto.js' %}"></script>
+<script>
+	let vm = new Vue({
+		el : "#app",
+		delimiters : ['[[', ']]'],
+		data : {		
+			maquinaria : JSON.parse('{{ json|safe }}'),
+			proyectos : JSON.parse('{{ proyectos|safe }}'),
+			proyectos_list : JSON.parse('{{ proyectos_list|safe }}'),
+			host : 'http://localhost',
+			module : '/maquinarias',
+			estatus : [
+				{
+					id : '1',
+					nombre : 'Disponible'
+				},
+				{
+					id : '2',
+					nombre : 'Ocupado'
+				},
+			]
+		},
+		computed : {
+			formatEstatus : function(){
+				if(this.maquinaria.estatus == '1')
+					return 'Disponible';
+				return 'Ocupado';
+			}
+		},
+		methods : {
+			getUrl : function(path, id){
+				let url = this.host + path;
+				if (id != undefined)
+					url += id;
+				return url;
+			},
+			getEstatus : function(estatus){
+				let e = '<span class="badge badge-pill badge-danger">Ocupado</span>';
+				if(estatus=="1")
+					e = '<span class="badge badge-pill badge-success">Disponible</span>';
+				return e;
+				// return (estatus=="1") ? "Disponible" : "Ocupado"; 
+			},
+			asignarProyecto : function()
+			{
+				$("#modal-proyecto").modal("show");
+			}
+		}
+	})
+</script>
+{% endblock %}

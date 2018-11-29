@@ -1,0 +1,70 @@
+{% extends 'main/index.html' %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+						<h5 class="card-title">Reporte General de Empleados 
+							<span class="badge badge-danger">{{ qty }} registros </span></h5>
+						<a href="javascript:window.print()" class="btn btn-primary pull-right d-print-none">
+							<i class="fas fa-print"></i>
+							Imprimir
+						</a>
+					</div>
+					<hr>
+					<div class="card-text">						
+					
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Cedula</th>
+									<th>Nombre</th>
+									<th>Fecha Nac.</th>
+									<th>Sexo</th>
+									<th>Departamento</th>
+									<th>Proyectos</th>
+									<th>Familiares</th>
+									<th>Supervisor</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for e in data %}
+								<tr>
+									<td>{{ e.cedula }}</td>
+									<td>{{ e.nombre }} {{e.apellidop }} {{ e.apellidom }}</td>
+									<td>{{ e.fechanac }}</td>
+									<td>{{ e.sexo }}</td>
+									<td>
+										{% for d in e.departamentos %}
+										<span class="badge badge-success">{{d.departamento.nombre}}</span>
+										{% endfor %}
+									</td>
+									<td>
+										{% for d in e.proyectos %}
+										<span class="badge badge-primary">{{d.proyecto.nombre}} (Horas: {{ d.horas }})</span><br>
+										{% endfor %}
+									</td>
+									<td>
+										{% for d in e.familiares %}
+										<span class="badge badge-secondary">{{d.nombre}} ({{d.parentesco}})</span><br>
+										{% endfor %}
+									</td>
+									<td>
+										{{e.supervisor.nombre}}
+										{{e.supervisor.apellidop}}
+										{{e.supervisor.apellidom}}
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<br>
+		</div>
+	</div>
+</div>
+{% endblock %}
